@@ -1,0 +1,121 @@
+1) 
+Can you explain below docker compose yml ? version: "3.1"
+network : 
+  upp-dev :
+    external: true 
+secrets: 
+  upp-lmg-secret: 
+    file : ${ROOT_PATH}/rails/lmgsecret.}/rails/lmgsecret.properties
+services:
+  lmgservices-cbs-dev: 
+    image : cbs:1.0.0.0-0002 
+    volumes: 
+      - ${ROOT_LOG_PATH}/lmg :/lmg 
+    network: 
+      - upp-dev 
+    environment: 
+      - IGNITE_LOCATION= 
+      - IGNITE_QUIET=N 
+      - TEMPLATE_LOCATION=
+      - SECRETS_LOCATION 
+      - TZ=Asia/kolkata 
+      - SERVICE_NAME=lmgcbs 
+      - MASK_REQD=Y 
+    extra_hosts : 
+      - "upp.kafka.com:${HOST_IP}"
+      - "upp.postgre.com:${HOST_IP}"
+      - "cbs.lmg.com:${CBS_IP}"
+    external_links : 
+      - sb_orchestrationservices_consumers:upp.orchservices.com 
+
+Answer : 
+
+Sure, I'd be happy to help explain this Docker Compose YAML file.
+
+Starting from the top:
+
+version: "3.1" specifies the version of Docker Compose being used for this file.
+
+network: specifies the creation of a named external network called upp-dev.
+
+external: true indicates that the network was created outside of the Docker Compose file and will be used by other services.
+
+secrets: specifies the creation of a secret called upp-lmg-secret.
+
+file: specifies the location of the secret file. In this case, it is located at ${ROOT_PATH}/rails/lmgsecret.}/rails/lmgsecret.properties.
+
+services: specifies the creation of a service called lmgservices-cbs-dev.
+
+image: specifies the Docker image to be used for the service. In this case, the image is called cbs with version 1.0.0.0-0002.
+
+volumes: specifies the volumes to be mounted to the container. In this case, ${ROOT_LOG_PATH}/lmg is mounted to /lmg.
+
+network: specifies that the service should be connected to the upp-dev network.
+
+environment: specifies the environment variables to be passed to the container. In this case, several environment variables are set, including IGNITE_LOCATION, IGNITE_QUIET, TEMPLATE_LOCATION, SECRETS_LOCATION, TZ, SERVICE_NAME, and MASK_REQD.
+
+extra_hosts: specifies additional hosts to add to the container's /etc/hosts file. In this case, upp.kafka.com, upp.postgre.com, and cbs.lmg.com are mapped to ${HOST_IP}.
+
+external_links: specifies links to external containers. In this case, sb_orchestrationservices_consumers is linked to upp.orchservices.com.
+
+
+2) Thanks . How can we implement externa_links in case of kubernetes ?
+
+In Kubernetes, you can use a feature called ServiceLinks to automatically create links between services. When a Pod is created, Kubernetes creates a DNS entry for the service's name, which can be resolved to the IP address of the service.
+
+If you need to link to an external service that is not running in Kubernetes, you can create a Service object with an ExternalName type. This type of service creates a DNS entry for the external service, and when a Pod queries this DNS entry, Kubernetes will return the external service's IP address.
+
+For example, suppose you have an external service running at myexternalservice.com, and you want to link to it from your Kubernetes cluster. You can create a Service object like this.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  type: ExternalName
+  externalName: myexternalservice.com
+
+
+This will create a Service object named my-service, which is of type ExternalName and resolves to myexternalservice.com. You can then refer to this service by name in your other Kubernetes objects, and Kubernetes will automatically resolve the DNS entry to the external service's IP address.
+
+Note that ExternalName services only support TCP and UDP protocols, and do not support load balancing or service discovery beyond DNS resolution. If you need more advanced features, you may need to use a different type of service or implement a more complex solution using Kubernetes ingress or similar technologies.
+
+
+3) sample deployment yml in which ServiceLinks have been use .
+
+In Kubernetes, ServiceLinks are created automatically when you define a Service object. Here's a sample deployment YAML that demonstrates how ServiceLinks can be used
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-container
+        image: my-image:latest
+        ports:
+        - containerPort: 80
+      serviceAccountName: my-service-account
+
+
+In this example, we define a deployment with three replicas of a container named my-container running the my-image:latest Docker image. The container listens on port 80.
+
+We also specify a serviceAccountName for the Pod. This service account will be used to create ServiceLinks for the Pod.
+
+When the deployment is created, Kubernetes will automatically create a Service object that matches the deployment's selector, and then create a ServiceLink from the Pod to the Service. This allows other services in the cluster to access the Pod using the Service's DNS name.
+
+For example, if the Service object is named my-service, other services in the cluster can access the Pod using the DNS name my-service. When a request is made to this DNS name, Kubernetes will automatically load balance the request across the Pods associated with the Service.
+
+
+
+
+
