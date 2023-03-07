@@ -1,5 +1,4 @@
-1) 
-Can you explain below docker compose yml ? version: "3.1"
+1) Docker Compose explaination 
 network : 
   upp-dev :
     external: true 
@@ -59,7 +58,7 @@ extra_hosts: specifies additional hosts to add to the container's /etc/hosts fil
 external_links: specifies links to external containers. In this case, sb_orchestrationservices_consumers is linked to upp.orchservices.com.
 
 
-2) Thanks . How can we implement externa_links in case of kubernetes ?
+2) Implementation of  externa_links in case of kubernetes 
 
 In Kubernetes, you can use a feature called ServiceLinks to automatically create links between services. When a Pod is created, Kubernetes creates a DNS entry for the service's name, which can be resolved to the IP address of the service.
 
@@ -81,7 +80,7 @@ This will create a Service object named my-service, which is of type ExternalNam
 Note that ExternalName services only support TCP and UDP protocols, and do not support load balancing or service discovery beyond DNS resolution. If you need more advanced features, you may need to use a different type of service or implement a more complex solution using Kubernetes ingress or similar technologies.
 
 
-3) sample deployment yml in which ServiceLinks have been use .
+3) Sample Deployment YML
 
 In Kubernetes, ServiceLinks are created automatically when you define a Service object. Here's a sample deployment YAML that demonstrates how ServiceLinks can be used
 
