@@ -1,4 +1,4 @@
-FROM node
+FROM node:14-alpine
 
 WORKDIR /app
 
@@ -8,18 +8,6 @@ RUN npm install
 
 COPY . .
 
+EXPOSE 80
+
 CMD ["node", "app.js"]
-
-
-FROM jboss/keycloak:8.0.1
-
-USER root
-
-RUN microdnf  install yum
-
-
-FROM ubuntu
-
-RUN apt-get update && apt-get install -y iputils-ping
-
-CMD bash 
